@@ -20,11 +20,11 @@ const int contrast = 0;             // Adjust the contrast for your LCD
 LiquidCrystal_I2C lcd(0x27, 16, 2);
 
 // Define parameters
-const int targetTemp = 25;       // Set your desired target temperature
-const int tempTolerance = 1;     // Set temperature tolerance
-const int maxTemp = 35;          // Maximum allowable temperature
-const int minTemp = 15;          // Minimum allowable temperature
-const float maxCurrent = 2.0;    // Maximum allowable current (adjust based on your components)
+int targetTemp = 25;               // Set your initial desired target temperature
+const int tempTolerance = 1;       // Set temperature tolerance
+const int maxTemp = 35;            // Maximum allowable temperature
+const int minTemp = 15;            // Minimum allowable temperature
+const float maxCurrent = 2.0;      // Maximum allowable current (adjust based on your components)
 const float ACS_SENSITIVITY = 0.185;  // Sensitivity factor for ACS712 sensor (adjust according to your module)
 
 // Variables for power and energy calculation
@@ -57,6 +57,7 @@ void setup() {
   pinMode(heaterPin, OUTPUT);
 
   Serial.begin(9600);  // Initialize serial communication
+  Serial.println("Enter the desired target temperature:");
 }
 
 void loop() {
@@ -132,6 +133,12 @@ void loop() {
   lcd.print("DC Current: ");
   lcd.print(currentDC);
   lcd.print("A ");
+
+  // Check if there's new data from the user
+  if (Serial.available() > 0) {
+    targetTemp = Serial.parseInt();  // Read user input for target temperature
+    Serial.println("Target temperature updated to: " + String(targetTemp) + " C");
+  }
 
   // Delay for stability
   delay(1000);
