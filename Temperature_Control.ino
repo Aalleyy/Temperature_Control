@@ -17,7 +17,7 @@ const int contrast = 0;             // Adjust the contrast for your LCD
 LiquidCrystal_I2C lcd(0x27, 16, 2);
 
 // Define parameters
-int targetTemp = 25;               // Set your initial desired target temperature
+static int targetTemp = 0;               // Set your initial desired target temperature
 const int maxTemp = 35;            // Maximum allowable temperature
 const int minTemp = 15;            // Minimum allowable temperature
 const float maxCurrent = 2.0;      // Maximum allowable current (adjust based on your components)
