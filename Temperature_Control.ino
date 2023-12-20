@@ -62,7 +62,6 @@ void setup() {
 void loop() {
   // Read temperature and humidity
   float temperature = dht.readTemperature();
-  float humidity = dht.readHumidity();
 
   // Read current for temperature control system
   float currentTempControl = readCurrent();
@@ -86,18 +85,13 @@ void loop() {
   lcd.print(temperature);
   lcd.print(" C  ");
 
-  lcd.setCursor(0, 1);
-  lcd.print("Humidity: ");
-  lcd.print(humidity);
-  lcd.print("% ");
-
   // Display power, voltage, current, and energy consumption for temperature control system
-  lcd.setCursor(0, 2);
+  lcd.setCursor(0, 1);
   lcd.print("Power: ");
   lcd.print(powerTempControl);
   lcd.print("W ");
 
-  lcd.setCursor(0, 3);
+  lcd.setCursor(0, 2);
   lcd.print("Energy: ");
   lcd.print(accumulatedEnergy);
   lcd.print("kWh ");
@@ -134,7 +128,7 @@ void loop() {
   }
 
   // Display DC current using shunt resistor
-  lcd.setCursor(0, 4);
+  lcd.setCursor(0, 3);
   lcd.print("DC Current: ");
   lcd.print(currentDC);
   lcd.print("A ");
