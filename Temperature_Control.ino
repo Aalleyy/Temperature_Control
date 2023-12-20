@@ -76,22 +76,37 @@ void loop() {
   accumulatedEnergy += energyTempControl;
   previousMillis = currentMillis;
 
-  // Display values on LCD for temperature control system
+  // Display temperature and power
   lcd.setCursor(0, 0);
   lcd.print("Temp: ");
   lcd.print(temperature);
   lcd.print(" C  ");
 
-  // Display power, voltage, current, and energy consumption for temperature control system
   lcd.setCursor(0, 1);
   lcd.print("Power: ");
   lcd.print(powerTempControl);
   lcd.print("W ");
 
-  lcd.setCursor(0, 2);
+  // Delay for stability
+  delay(3000);  // Display temperature and power for 5 seconds
+
+  // Display energy, current, and voltage
+  lcd.clear();
+
+  lcd.setCursor(0, 0);
   lcd.print("Energy: ");
   lcd.print(accumulatedEnergy);
-  lcd.print("kWh ");
+  lcd.print(" kWh ");
+
+  lcd.setCursor(0, 1);
+  lcd.print("I: ");
+  lcd.print(currentTempControl);
+  lcd.print("A ");
+
+  lcd.setCursor(0, 1);
+  lcd.print("V: ");
+  lcd.print(voltage);
+  lcd.print("V ");
 
   // Check temperature and control relay, fans, and heating elements
   if (temperature < targetTemp - tempTolerance) {
@@ -131,7 +146,7 @@ void loop() {
   }
 
   // Delay for stability
-  delay(1000);
+  delay(3000);
 }
 
 float readCurrent() {
