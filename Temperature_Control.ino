@@ -24,6 +24,7 @@ const int tempTolerance = 1;       // Set temperature tolerance
 const int maxTemp = 35;            // Maximum allowable temperature
 const int minTemp = 15;            // Minimum allowable temperature
 const float maxCurrent = 2.0;      // Maximum allowable current (adjust based on your components)
+const float ACS_SENSITIVITY = 0.185;  // Sensitivity factor for ACS712 sensor (adjust according to your module)
 
 // Variables for power and energy calculation
 float voltage = 12.0;  // A constant voltage supply of 12V
