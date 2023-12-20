@@ -1,20 +1,20 @@
 #include <DHT.h>
-#include <LiquidCrystal_I2C.h>
 #include <Wire.h>
+#include <LiquidCrystal_I2C.h>
 
 #define DHTPIN 7          // Digital pin connected to the DHT sensor
 #define DHTTYPE DHT11     // DHT sensor type
 
 DHT dht(DHTPIN, DHTTYPE);
 
-// Define pins for 16x2 LCD, relay, fans, current sensor, and heating elements
+// Define pins for 16x2 LCD, relay, fans, and heating elements
 const int relayHeaterPin = 2;
 const int relayFanPin = 3;
 const int fanPin = 4;
 const int heaterPin = 5;
-const int currentSensorPin = A1;  // Analog pin for the temperature control system current sensor
-const int acs712Pin = A3;  // Analog input pin connected to the ACS712 sensor
-const int contrast = 0;          // Adjust the contrast for your LCD
+const int currentSensorPin = A1;    // Analog pin for the temperature control system current sensor
+const int dcCurrentSensorPin = A3;  // Analog pin for DC current measurement (voltage drop across shunt resistor)
+const int contrast = 0;             // Adjust the contrast for your LCD
 
 // LCD configuration
 LiquidCrystal_I2C lcd(0x27, 16, 2);
@@ -25,9 +25,7 @@ const int tempTolerance = 1;     // Set temperature tolerance
 const int maxTemp = 35;          // Maximum allowable temperature
 const int minTemp = 15;          // Minimum allowable temperature
 const float maxCurrent = 2.0;    // Maximum allowable current (adjust based on your components)
-const int samples = 500;  // Number of samples to take for each ACS712 reading
-const float voltageRef = 1.5;  // Reference voltage for the ACS712 sensor
-const float acsSensitivity = 0.185;  // Sensitivity factor for ACS712 5A sensor (in V/A)
+const float shuntResistance = 0.1;  // Resistance of the shunt resistor (in ohms)
 
 // Variables for power and energy calculation
 float voltage = 220.0;  // Assuming a constant voltage of 220V
@@ -35,19 +33,12 @@ unsigned long previousMillis = 0;
 unsigned long interval = 1000;  // Update every 1 second
 float accumulatedEnergy = 0.0;
 
-int rawValue = 0;
-
-// Function to read and calculate the AC current
-float measureACCurrent() {
-  float sum = 0;
-  for (int i = 0; i < samples; i++) {
-    rawValue = analogRead(acs712Pin);
-    float voltage = (rawValue / 1023.0) * voltageRef;
-    float current = (voltage - voltageRef / 2) / acsSensitivity;
-    sum += sq(current);
-    delay(1);
-  }
-  return sqrt(sum / samples);
+// Function to read and calculate the DC current
+float measureCurrent() {
+  int rawValue = analogRead(dcCurrentSensorPin);
+  float voltageDrop = (rawValue / 1023.0) * 5.0;
+  float current = voltageDrop / shuntResistance;
+  return current;
 }
 
 void setup() {
@@ -76,8 +67,8 @@ void loop() {
   // Read current for temperature control system
   float currentTempControl = readCurrent();
 
-  // Read AC current using ACS712 sensor
-  float currentACS712 = measureACCurrent();
+  // Read DC current using shunt resistor
+  float currentDC = measureCurrent();
 
   // Calculate power and energy consumption for temperature control system
   float powerTempControl = voltage * currentTempControl;
@@ -142,10 +133,10 @@ void loop() {
     lcd.print("Low Temp Warning");
   }
 
-  // Display AC current using ACS712 sensor
+  // Display DC current using shunt resistor
   lcd.setCursor(0, 4);
-  lcd.print("AC Current: ");
-  lcd.print(currentACS712);
+  lcd.print("DC Current: ");
+  lcd.print(currentDC);
   lcd.print("A ");
 
   // Delay for stability
