@@ -2,6 +2,7 @@
 Temperature Control with Power Monitoring System
 ## Components used:
 Arduino Uno </br>
+16x2 I2C Display </br>
 DHT 11 </br>
 Current Sensor </br>
 DC fans </br>
