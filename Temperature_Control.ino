@@ -18,7 +18,6 @@ LiquidCrystal_I2C lcd(0x27, 16, 2);
 
 // Define parameters
 int targetTemp = 25;               // Set your initial desired target temperature
-const int tempTolerance = 1;       // Set temperature tolerance
 const int maxTemp = 35;            // Maximum allowable temperature
 const int minTemp = 15;            // Minimum allowable temperature
 const float maxCurrent = 2.0;      // Maximum allowable current (adjust based on your components)
@@ -105,15 +104,12 @@ void loop() {
   lcd.print(voltage);
   lcd.print("V ");
 
-  if (targetTemp == 0){
-
-  }
 
   // Check temperature and control relay, fans, and heating elements
-  if (temperature < targetTemp - tempTolerance) {
+  if (temperature < targetTemp) {
     digitalWrite(relayHeaterPin, HIGH);  // Turn on heating element relay
     digitalWrite(relayFanPin, LOW);      // Turn off fan relay
-  } else if (temperature > targetTemp + tempTolerance) {
+  } else if (temperature > targetTemp) {
     digitalWrite(relayHeaterPin, LOW);   // Turn off heating element relay
     digitalWrite(relayFanPin, HIGH);      // Turn on fan relay
   } else {
@@ -146,9 +142,7 @@ void loop() {
 
 float readCurrent() {
   // Read current from ACS712 sensor for temperature control system
-
   int sensorValue = analogRead(currentSensorPin);
   float current = (sensorValue - 512.0) / 1024.0 * 5.0;  // Assumes ACS712 with 5A range
-
-  return current;
+  return current;
 }
