@@ -10,8 +10,6 @@ DHT dht(DHTPIN, DHTTYPE);
 // Define pins for 16x2 LCD, relay, fans, and heating elements
 const int relayHeaterPin = 2;
 const int relayFanPin = 3;
-const int fanPin = 4;
-const int heaterPin = 5;
 const int currentSensorPin = A1;    // Analog pin for the temperature control system current sensor
 const int contrast = 0;             // Adjust the contrast for your LCD
 
@@ -52,8 +50,7 @@ void setup() {
   // Initialize relay, fans, heating elements, and current sensor pins
   pinMode(relayHeaterPin, OUTPUT);
   pinMode(relayFanPin, OUTPUT);
-  pinMode(fanPin, OUTPUT);
-  pinMode(heaterPin, OUTPUT);
+
 
   Serial.begin(9600);  // Initialize serial communication
   Serial.println("Enter the desired target temperature:");
@@ -96,34 +93,32 @@ void loop() {
   lcd.setCursor(0, 0);
   lcd.print("Energy: ");
   lcd.print(accumulatedEnergy);
-  lcd.print(" kWh ");
+  lcd.print("kWh ");
 
   lcd.setCursor(0, 1);
   lcd.print("I: ");
   lcd.print(currentTempControl);
   lcd.print("A ");
 
-  lcd.setCursor(0, 1);
+  //lcd.setCursor(0, 1);
   lcd.print("V: ");
   lcd.print(voltage);
   lcd.print("V ");
+
+  if (targetTemp == 0){
+
+  }
 
   // Check temperature and control relay, fans, and heating elements
   if (temperature < targetTemp - tempTolerance) {
     digitalWrite(relayHeaterPin, HIGH);  // Turn on heating element relay
     digitalWrite(relayFanPin, LOW);      // Turn off fan relay
-    digitalWrite(fanPin, LOW);            // Turn off fan
-    digitalWrite(heaterPin, HIGH);        // Turn on heating element
   } else if (temperature > targetTemp + tempTolerance) {
     digitalWrite(relayHeaterPin, LOW);   // Turn off heating element relay
     digitalWrite(relayFanPin, HIGH);      // Turn on fan relay
-    digitalWrite(fanPin, HIGH);           // Turn on fan
-    digitalWrite(heaterPin, LOW);         // Turn off heating element
   } else {
     digitalWrite(relayHeaterPin, LOW);   // Turn off heating element relay
     digitalWrite(relayFanPin, LOW);      // Turn off fan relay
-    digitalWrite(fanPin, LOW);           // Turn off fan
-    digitalWrite(heaterPin, LOW);         // Turn off heating element
   }
 
   // Check for safety limits for temperature control system
@@ -151,7 +146,9 @@ void loop() {
 
 float readCurrent() {
   // Read current from ACS712 sensor for temperature control system
+
   int sensorValue = analogRead(currentSensorPin);
   float current = (sensorValue - 512.0) / 1024.0 * 5.0;  // Assumes ACS712 with 5A range
-  return current;
+
+  return current;
 }
