@@ -13,7 +13,6 @@ const int relayFanPin = 3;
 const int fanPin = 4;
 const int heaterPin = 5;
 const int currentSensorPin = A1;    // Analog pin for the temperature control system current sensor
-const int dcCurrentSensorPin = A3;  // Analog pin for DC current measurement using ACS712 sensor
 const int contrast = 0;             // Adjust the contrast for your LCD
 
 // LCD configuration
@@ -25,17 +24,16 @@ const int tempTolerance = 1;       // Set temperature tolerance
 const int maxTemp = 35;            // Maximum allowable temperature
 const int minTemp = 15;            // Minimum allowable temperature
 const float maxCurrent = 2.0;      // Maximum allowable current (adjust based on your components)
-const float ACS_SENSITIVITY = 0.185;  // Sensitivity factor for ACS712 sensor (adjust according to your module)
 
 // Variables for power and energy calculation
-float voltage = 220.0;  // Assuming a constant voltage of 220V
+float voltage = 12.0;  // A constant voltage supply of 12V
 unsigned long previousMillis = 0;
 unsigned long interval = 1000;  // Update every 1 second
 float accumulatedEnergy = 0.0;
 
 // Function to read and calculate the DC current
 float measureCurrent() {
-  int rawValue = analogRead(dcCurrentSensorPin);
+  int rawValue = analogRead(currentSensorPin);
   float voltage = (rawValue / 1023.0) * 5.0;
   float current = voltage / ACS_SENSITIVITY;  // ACS712 sensitivity factor
   return current;
@@ -66,9 +64,6 @@ void loop() {
 
   // Read current for temperature control system
   float currentTempControl = readCurrent();
-
-  // Read DC current using ACS712 sensor
-  float currentDC = measureCurrent();
 
   // Calculate power and energy consumption for temperature control system
   float powerTempControl = voltage * currentTempControl;
@@ -127,12 +122,6 @@ void loop() {
     lcd.clear();
     lcd.print("Low Temp Warning");
   }
-
-  // Display DC current using ACS712 sensor
-  lcd.setCursor(0, 3);
-  lcd.print("DC Current: ");
-  lcd.print(currentDC);
-  lcd.print("A ");
 
   // Check if there's new data from the user
   if (Serial.available() > 0) {
