@@ -10,14 +10,14 @@ DHT dht(DHTPIN, DHTTYPE);
 // Define pins for 16x2 LCD, relay, fans, and heating elements
 const int relayHeaterPin = 2;
 const int relayFanPin = 3;
-const int currentSensorPin = A1;    // Analog pin for the temperature control system current sensor
+const int currentSensorPin = A1;    // Analog pin for the current sensor
 const int contrast = 0;             // Adjust the contrast for your LCD
 
 // LCD configuration
 LiquidCrystal_I2C lcd(0x27, 16, 2);
 
 // Define parameters
-static int targetTemp = 0;               // Set your initial desired target temperature
+int targetTemp = 25;               // Set your initial desired target temperature
 const int maxTemp = 35;            // Maximum allowable temperature
 const int minTemp = 15;            // Minimum allowable temperature
 const float maxCurrent = 2.0;      // Maximum allowable current (adjust based on your components)
@@ -31,8 +31,8 @@ float accumulatedEnergy = 0.0;
 
 // Function to read and calculate the DC current
 float measureCurrent() {
-  int rawValue = analogRead(currentSensorPin);
-  float voltage = (rawValue / 1023.0) * 5.0;
+  int sensorValue = analogRead(currentSensorPin);
+  float voltage = (sensorValue / 1023.0) * 5.0;
   float current = voltage / ACS_SENSITIVITY;  // ACS712 sensitivity factor
   return current;
 }
@@ -40,7 +40,7 @@ float measureCurrent() {
 void setup() {
   // Initialize LCD
   lcd.begin(16, 2);
-  lcd.setBacklight(LOW);
+  lcd.setBacklight(HIGH);
   lcd.setContrast(contrast);
 
   // Initialize DHT sensor
@@ -50,9 +50,8 @@ void setup() {
   pinMode(relayHeaterPin, OUTPUT);
   pinMode(relayFanPin, OUTPUT);
 
-
   Serial.begin(9600);  // Initialize serial communication
-  Serial.println("Enter the desired target temperature:");
+  Serial.println("Enter the desired target temperature: ");
 }
 
 void loop() {
@@ -60,7 +59,7 @@ void loop() {
   float temperature = dht.readTemperature();
 
   // Read current for temperature control system
-  float currentTempControl = readCurrent();
+  float currentTempControl = measureCurrent();
 
   // Calculate power and energy consumption for temperature control system
   float powerTempControl = voltage * currentTempControl;
@@ -72,38 +71,39 @@ void loop() {
   accumulatedEnergy += energyTempControl;
   previousMillis = currentMillis;
 
-  // Display temperature and power
+  // Display temperature, current, and voltage
   lcd.setCursor(0, 0);
   lcd.print("Temp: ");
   lcd.print(temperature);
   lcd.print(" C  ");
 
   lcd.setCursor(0, 1);
-  lcd.print("Power: ");
-  lcd.print(powerTempControl);
-  lcd.print("W ");
-
-  // Delay for stability
-  delay(3000);  // Display temperature and power for 5 seconds
-
-  // Display energy, current, and voltage
-  lcd.clear();
-
-  lcd.setCursor(0, 0);
-  lcd.print("Energy: ");
-  lcd.print(accumulatedEnergy);
-  lcd.print("kWh ");
-
-  lcd.setCursor(0, 1);
   lcd.print("I: ");
   lcd.print(currentTempControl);
   lcd.print("A ");
 
-  //lcd.setCursor(0, 1);
+  lcd.setCursor(8, 1);
   lcd.print("V: ");
   lcd.print(voltage);
   lcd.print("V ");
 
+  // Delay for stability
+  delay(3000);  // Display temperature current, and voltage for 3 seconds
+
+  // Display energy consumption and power
+  lcd.clear();
+
+  lcd.setCursor(0, 0);
+  lcd.print("Power: ");
+  lcd.print(powerTempControl);
+  lcd.print("W ");
+  
+  lcd.setCursor(0, 1);
+  lcd.print("Energy: ");
+  lcd.print(accumulatedEnergy);
+  lcd.print("kWh ");
+
+  
 
   // Check temperature and control relay, fans, and heating elements
   if (temperature < targetTemp) {
@@ -118,7 +118,10 @@ void loop() {
   }
 
   // Check for safety limits for temperature control system
-  if (temperature > maxTemp || currentTempControl > maxCurrent) {
+  if (temperature == targetTemp){
+    lcd.clear();
+    lcd.print("Temperature Set");
+  } else if (temperature > maxTemp || currentTempControl > maxCurrent) {
     // Implement safety measures for high temperature or current
     // (e.g., turn off heating element, turn off fan, display warning)
     lcd.clear();
@@ -134,15 +137,10 @@ void loop() {
   if (Serial.available() > 0) {
     targetTemp = Serial.parseInt();  // Read user input for target temperature
     Serial.println("Target temperature updated to: " + String(targetTemp) + " C");
+    lcd.clear();
+    lcd.print("Target Temp Updated");
   }
 
   // Delay for stability
   delay(3000);
-}
-
-float readCurrent() {
-  // Read current from ACS712 sensor for temperature control system
-  int sensorValue = analogRead(currentSensorPin);
-  float current = (sensorValue - 512.0) / 1024.0 * 5.0;  // Assumes ACS712 with 5A range
-  return current;
 }
